@@ -16,6 +16,22 @@ define(['settings'], function(Settings) {
       *  - basic authentication: use url syntax http://username:password@domain:port
       */
 
+      // Presto example settings
+      /*
+      datasources: {
+        prestodb: {
+          type: 'prestodb',
+          urls: ["http://my.presto.server.com:8080"],
+          key: "key",
+          time_field: "play_time",
+          time_field_is_string: false,
+          pseudonow: '2014-04-30 23:00:00',
+          timezone: 8,
+          grafanaDB: true,
+        },
+      },
+      */
+
       // InfluxDB example setup (the InfluxDB databases specified need to exist)
       /*
       datasources: {
