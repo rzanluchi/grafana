@@ -142,31 +142,6 @@
 									 ng-model-onblur ng-change="get_data()" >
 					</li>
 
-					<li class="grafana-target-segment">
-							<i class="icon-plus"></i>
-					</li>
-
-					<li>
-						<input type="text" class="input-small grafana-target-text-input" ng-model="target.groupby_field" bs-tooltip="'Add a group by column or leave blank'"
-									 placeholder="column" spellcheck="false" bs-typeahead="listColumns" data-min-length=0 ng-blur="get_data()">
-					</li>
-
-					<li class="dropdown">
-						<a class="grafana-target-segment pointer" data-toggle="dropdown" bs-tooltip="'Insert missing values, important when stacking'" data-placement="right">
-							<span ng-show="target.fill">
-								fill ({{target.fill}})
-							</span>
-							<span ng-show="!target.fill">
-								no fill
-							</span>
-					  </a>
-						<ul class="dropdown-menu">
-							<li><a ng-click="target.fill = ''">no fill</a></li>
-							<li><a ng-click="target.fill = 'null'">fill (null)</a></li>
-							<li><a ng-click="target.fill = '0'">fill (0)</a></li>
-						</ul>
-					</li>
-
         </ul>
 
         <div class="clearfix"></div>
