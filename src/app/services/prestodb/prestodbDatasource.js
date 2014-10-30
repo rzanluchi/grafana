@@ -37,7 +37,7 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
         true : datasource.time_field_is_string;
 
       this.pseudonow = datasource.pseudonow;
-      this.sinceDate = moment(this.pseudonow).subtract('days', 30).format("YYYY-MM-DD hh:mm:ss");
+      this.sinceDate = moment(this.pseudonow).subtract('days', 30).format("YYYY-MM-DD HH:mm:ss");
       this.now = "date_parse('" + this.pseudonow + "', '%Y-%m-%e %H:%i:%s')";
 
       if (this.timeFieldIsString) {
@@ -58,7 +58,8 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
 
       var timeFilter = getTimeFilter(this.timeFieldStatement, options);
 
-      this.sinceDate = timeFilter[1].format("YYYY-MM-DD hh:mm:ss");
+      this.sinceDate = timeFilter[1].format("YYYY-MM-DD HH:mm:ss");
+      this.sinceLocalDate = moment.unix(timeFilter[1].unix()).format();
 
       var promises = _.map(options.targets, function(target) {
         if (target.hide || !((target.series && target.column) || target.query)) {
@@ -91,7 +92,7 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
         var alias = target.alias ? templateSrv.replace(target.alias) : '';
 
         var handleResponse = _.partial(handlePrestoQueryResponse, alias,
-          queryBuilder.groupByField, this.sinceDate, intervalSeconds);
+          queryBuilder.groupByField, this.sinceLocalDate, intervalSeconds);
         return this._seriesQuery(query).then(handleResponse);
 
       }, this);
@@ -103,7 +104,7 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
 
     PrestoDatasource.prototype.annotationQuery = function(annotation, rangeUnparsed) {
 
-      setPseudoNow(timeSrv, this.pseudonow || moment().format("YYYY-MM-DD hh:mm:ss"));
+      setPseudoNow(timeSrv, this.pseudonow || moment().format("YYYY-MM-DD HH:mm:ss"));
       rangeUnparsed = timeSrv.timeRange(false);
 
       var timeFilter = getTimeFilter(this.timeFieldStatement, { range: rangeUnparsed });
@@ -416,16 +417,15 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
     function getTimeFilter(timeFieldStatement, options) {
       var from = getPrestoTime(options.range.from);
       var until = getPrestoTime(options.range.to);
-      console.log(from);
 
       if (until === 'now()') {
-        from = getPrestoTimeDetails(from, new Date());
+        from = getPrestoTimeDetails(from, moment.utc());
         return [timeFieldStatement + " > " +
         "date_parse('" + from.format("YYYY-MM-DD HH:mm:ss") + "', '%Y-%m-%e %H:%i:%s')", from];
       }
 
-      var parsedFrom = moment(parseIntervalString(from)[0] * 1000);
-      var parsedUntil = moment(parseIntervalString(until)[0] * 1000);
+      var parsedFrom = moment.utc(parseIntervalString(from)[0] * 1000);
+      var parsedUntil = moment.utc(parseIntervalString(until)[0] * 1000);
 
       return [timeFieldStatement + " > " +
       "date_parse('" + parsedFrom.format("YYYY-MM-DD HH:mm:ss")  + "', '%Y-%m-%e %H:%i:%s') and " +
