@@ -10,7 +10,6 @@ function (_, moment) {
     this.alias = options.alias;
     this.groupByField = options.groupByField;
     this.sinceDate = options.sinceDate;
-    this.pseudoNowDate = options.pseudoNowDate;
     this.seriesName = options.alias;
     this.annotation = options.annotation;
     this.intervalSeconds = options.intervalSeconds;

@@ -33,11 +33,13 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
       this.requestHeaders = datasource.requestHeaders;
       this.timeField = datasource.time_field;
       this.rest_api_path = datasource.rest_api_path;
+      this.timeFieldIsString =  _.isUndefined(datasource.time_field_is_string) ?
+        true : datasource.time_field_is_string;
+
       this.pseudonow = datasource.pseudonow;
       this.sinceDate = moment(this.pseudonow).subtract('days', 30).format("YYYY-MM-DD hh:mm:ss");
       this.now = "date_parse('" + this.pseudonow + "', '%Y-%m-%e %H:%i:%s')";
-      this.timeFieldIsString =  _.isUndefined(datasource.time_field_is_string) ?
-        true : datasource.time_field_is_string;
+
 
       if (this.timeFieldIsString) {
         this.timeFieldStatement = "date_parse(" + this.timeField + ", '%Y-%m-%e %H:%i:%s')";
@@ -51,11 +53,11 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
 
     PrestoDatasource.prototype.query = function(options) {
 
+      console.log(options);
       // Use pseudo now config as current date
-      setPseudoNow(timeSrv, this.pseudonow || moment().format("YYYY-MM-DD hh:mm:ss"));
       options.range = timeSrv.timeRange(false);
 
-      var timeFilter = getTimeFilter(this.timeFieldStatement, this.now, this.pseudonow, options);
+      var timeFilter = getTimeFilter(this.timeFieldStatement, options);
 
       this.sinceDate = timeFilter[1].format("YYYY-MM-DD hh:mm:ss");
 
@@ -90,7 +92,7 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
         var alias = target.alias ? templateSrv.replace(target.alias) : '';
 
         var handleResponse = _.partial(handlePrestoQueryResponse, alias,
-          queryBuilder.groupByField, this.sinceDate, this.pseudonow, intervalSeconds);
+          queryBuilder.groupByField, this.sinceDate, intervalSeconds);
         return this._seriesQuery(query).then(handleResponse);
 
       }, this);
@@ -105,7 +107,7 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
       setPseudoNow(timeSrv, this.pseudonow || moment().format("YYYY-MM-DD hh:mm:ss"));
       rangeUnparsed = timeSrv.timeRange(false);
 
-      var timeFilter = getTimeFilter(this.timeFieldStatement, this.now, this.pseudonow, { range: rangeUnparsed });
+      var timeFilter = getTimeFilter(this.timeFieldStatement, { range: rangeUnparsed });
       var query = annotation.query.replace('$timeFilter', timeFilter[0]);
       query = query.replace('select', "select to_unixtime(" + this.timeFieldStatement + ") as time,");
       query = templateSrv.replace(annotation.query);
@@ -400,27 +402,27 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
       }
     }
 
-    function handlePrestoQueryResponse(alias, groupByField, sinceDate, pseudoNowDate, intervalSeconds, seriesList) {
+    function handlePrestoQueryResponse(alias, groupByField, sinceDate, intervalSeconds, seriesList) {
       var prestoSeries = new PrestoSeries({
         seriesList: seriesList,
         alias: alias,
         groupByField: groupByField,
         sinceDate: sinceDate,
-        pseudoNowDate: pseudoNowDate,
         intervalSeconds: intervalSeconds,
       });
 
       return prestoSeries.getTimeSeries();
     }
 
-    function getTimeFilter(timeFieldStatement, nowStr, pseudoNowDate, options) {
+    function getTimeFilter(timeFieldStatement, options) {
       var from = getPrestoTime(options.range.from);
       var until = getPrestoTime(options.range.to);
+      console.log(from);
 
       if (until === 'now()') {
-        from = getPrestoTimeDetails(from, pseudoNowDate);
+        from = getPrestoTimeDetails(from, new Date());
         return [timeFieldStatement + " > " +
-        "date_parse('" + from.format("YYYY-MM-DD hh:mm:ss") + "', '%Y-%m-%e %H:%i:%s')", from];
+        "date_parse('" + from.format("YYYY-MM-DD HH:mm:ss") + "', '%Y-%m-%e %H:%i:%s')", from];
       }
 
       var parsedFrom = parseIntervalString(from);
