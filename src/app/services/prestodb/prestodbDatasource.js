@@ -40,7 +40,6 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
       this.sinceDate = moment(this.pseudonow).subtract('days', 30).format("YYYY-MM-DD hh:mm:ss");
       this.now = "date_parse('" + this.pseudonow + "', '%Y-%m-%e %H:%i:%s')";
 
-
       if (this.timeFieldIsString) {
         this.timeFieldStatement = "date_parse(" + this.timeField + ", '%Y-%m-%e %H:%i:%s')";
       } else {
@@ -425,11 +424,14 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
         "date_parse('" + from.format("YYYY-MM-DD HH:mm:ss") + "', '%Y-%m-%e %H:%i:%s')", from];
       }
 
-      var parsedFrom = parseIntervalString(from);
-      var parsedUntil = parseIntervalString(until);
+      var parsedFrom = moment(parseIntervalString(from)[0] * 1000);
+      var parsedUntil = moment(parseIntervalString(until)[0] * 1000);
 
-      return ["to_unixtime(" + timeFieldStatement + ") > " + parsedFrom[0] +
-      " and to_unixtime(" + timeFieldStatement + ") < " + parsedUntil[0], moment.unix(parsedFrom[0])];
+      return [timeFieldStatement + " > " +
+      "date_parse('" + parsedFrom.format("YYYY-MM-DD HH:mm:ss")  + "', '%Y-%m-%e %H:%i:%s') and " +
+      timeFieldStatement + " <= " +
+      "date_parse('" + parsedUntil.format("YYYY-MM-DD HH:mm:ss")  + "', '%Y-%m-%e %H:%i:%s')",
+      parsedFrom];
     }
 
     function parseIntervalString(interval) {
