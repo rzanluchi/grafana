@@ -33,7 +33,6 @@ function (_, moment) {
     var i;
 
     _.each([self.seriesList], function(series) {
-      console.log('processing serie, ', series);
       var timeCol = 0;
       var valueCol = 1;
       var groupByCol = -1;
@@ -51,7 +50,6 @@ function (_, moment) {
 
       var groups = {};
 
-      console.log('self', self);
       if (self.groupByField) {
         groups = _.groupBy(series.data, function (point) {
           return point[groupByCol];
@@ -60,7 +58,6 @@ function (_, moment) {
       else {
         groups[''] = series.data;
       }
-      console.log('groups: ', groups);
 
       _.each(groups, function(groupPoints, groupKey) {
         var datapoints = [];
@@ -74,7 +71,6 @@ function (_, moment) {
       });
     });
 
-    console.log('output', output);
 
     return output;
   };

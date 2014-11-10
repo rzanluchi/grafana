@@ -52,7 +52,6 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
 
     PrestoDatasource.prototype.query = function(options) {
 
-      console.log(options);
       // Use pseudo now config as current date
       options.range = timeSrv.timeRange(false);
 
@@ -141,7 +140,6 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
         return self.cache.series;
       } else {
         return this._seriesQuery('show tables').then(function(data) {
-          console.log("data, ", data);
           if (!data || data.length === 0) {
             return [];
           } else {
@@ -362,8 +360,6 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
 
       return this.localGrafanaDB._searchDashboards(localStorageQuery).then(function(results) {
         var hits = { dashboards: [], tags: [], tagsOnly: false };
-
-        console.log(results);
 
         if (!results || !results.length) {
           return hits;
