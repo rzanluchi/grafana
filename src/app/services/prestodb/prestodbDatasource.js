@@ -388,7 +388,7 @@ function (angular, _, kbn, moment, PrestoSeries, PrestoQueryBuilder) {
               handleAsyncPrestoApiCall(data, promise);
             });
           }
-        }, 2000);
+        }, 500);
       } else {
         // the query returned 0 results
         promise.resolve({
